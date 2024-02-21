@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/macos,linux,windows,c,zig
-# Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,windows,c,zig
+# Created by https://www.toptal.com/developers/gitignore/api/zig,c,nodejs,go,macos,linux,windows,vim
+# Edit at https://www.toptal.com/developers/gitignore?templates=zig,c,nodejs,go,macos,linux,windows,vim
 
 ### C ###
 # Prerequisites
@@ -55,6 +55,24 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+### Go ###
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe~
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
 ### Linux ###
 *~
 
@@ -102,6 +120,28 @@ Temporary Items
 # iCloud generated files
 *.icloud
 
+#!! ERROR: nodejs is undefined. Use list command to see defined gitignore types !!#
+
+### Vim ###
+# Swap
+[._]*.s[a-v][a-z]
+!*.svg  # comment out if you don't need vector files
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+
+# Session
+Session.vim
+Sessionx.vim
+
+# Temporary
+.netrwhist
+# Auto-generated tag files
+tags
+# Persistent undo
+[._]*.un~
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -137,4 +177,4 @@ build/
 build-*/
 docgen_tmp/
 
-# End of https://www.toptal.com/developers/gitignore/api/macos,linux,windows,c,zig
+# End of https://www.toptal.com/developers/gitignore/api/zig,c,nodejs,go,macos,linux,windows,vim
