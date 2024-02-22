@@ -28,21 +28,21 @@ pub fn FreqK(comptime T: type) type {
         }
 
         // TODO: can this be *const Self?
-        pub fn deinit(self: *Self) void {
+        pub fn deinit(self: *const Self) void {
             for (self.result_list.items) |*item| {
                 item.deinit();
             }
             self.result_list.deinit();
         }
 
-        pub fn getFreq(self: *Self, k: usize) ![]T {
+        pub fn getFreq(self: *const Self, k: usize) ![]T {
             if (k < 1) {
                 return error.FreqLessThanOne;
             }
             return self.result_list.items[k - 1].items;
         }
 
-        pub fn getFreqAtIndex(self: *Self, k: usize, index: usize) !T {
+        pub fn getFreqAtIndex(self: *const Self, k: usize, index: usize) !T {
             if (k < 1) {
                 return error.FreqLessThanOne;
             }
@@ -126,7 +126,7 @@ test "freqKElements" {
     util.setTestName("freqKElements");
     const data: [19]u32 = .{ 8, 8, 8, 8, 5, 5, 5, 7, 7, 10, 2, 2, 3, 9, 9, 9, 14, 14, 14 };
 
-    var freq_k = try FreqK(u32).calculate(2, &data, talloc);
+    const freq_k = try FreqK(u32).calculate(2, &data, talloc);
     defer freq_k.deinit();
 
     try util.isOk("k is correct", freq_k.k == 2);
