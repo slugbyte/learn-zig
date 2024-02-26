@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const util = @import("./util.zig");
 const t = std.testing;
 const mem = std.mem;
 const fmt = std.fmt;
