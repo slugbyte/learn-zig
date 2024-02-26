@@ -1,5 +1,7 @@
 const std = @import("std");
 
+pub const JSON_NOTE_FILE_CONTENT = @embedFile("./res/json/note.json");
+
 var test_name: []const u8 = "unknown";
 
 pub inline fn eql(a: []const u8, b: []const u8) bool {

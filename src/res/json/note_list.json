@@ -1,0 +1,42 @@
+[
+  {
+    "title": "exapmle A",
+    "description": "A",
+    "lucky_number": -32,
+    "count": 205,
+    "progress": 23.4,
+    "is_complete": false
+  },
+  {
+    "title": "exapmle B",
+    "description": "B",
+    "lucky_number": 42,
+    "count": 0,
+    "progress": 66.6,
+    "is_complete": true
+  },
+  {
+    "title": "exapmle C",
+    "description": "C",
+    "lucky_number": -107,
+    "count": 5,
+    "progress": 75.0,
+    "is_complete": true
+  },
+  {
+    "title": "example D",
+    "description": "D",
+    "lucky_number": null,
+    "count": 100,
+    "progress": 10.5,
+    "is_complete": true
+  },
+  {
+    "title": "example E",
+    "lucky_number": null,
+    "description": "E",
+    "count": 56,
+    "progress": 93.4,
+    "is_complete": false
+  }
+]
