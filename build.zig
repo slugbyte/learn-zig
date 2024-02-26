@@ -1,11 +1,12 @@
 const std = @import("std");
 
-const testFiles: [5][]const u8 = .{
+const testFiles: [6][]const u8 = .{
     "src/array_00_contains_duplicate.zig",
     "src/array_01_is_anagram.zig",
     "src/array_02_two_sum.zig",
     "src/array_04_freq_k_elements.zig",
     "src/array_05_product_except_self.zig",
+    "src/array_07_encode_decode_string_list.zig",
 };
 
 // Although this function looks imperative, note that its job is to
