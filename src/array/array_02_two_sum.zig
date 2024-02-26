@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 
@@ -30,7 +30,9 @@ test "twoSumA" {
     try util.isNotOk("1,6,9->11", twoSumA(u32, &data, 11));
 }
 
-///
+/// hash mab implamentaion
+/// Time: O(n)
+/// Space: O(n)
 pub fn twoSumB(comptime T: type, list: []const T, target: T, allocator: Allocator) !bool {
     const Map = std.AutoHashMap(T, usize);
     var map = Map.init(allocator);

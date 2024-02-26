@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 const Histogram = std.AutoHashMap(u8, u32);
@@ -75,7 +75,7 @@ pub fn isValidAnagramB(lhs: []const u8, rhs: []const u8, allocator: Allocator) !
     defer allocator.free(right);
     std.mem.sort(u8, right, {}, sortU8Asc);
 
-    return std.mem.eql(u8, left, right);
+    return util.eql(left, right);
 }
 
 test "isAnagramB" {

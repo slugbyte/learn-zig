@@ -1,8 +1,8 @@
 const std = @import("std");
+const util = @import("util");
 const t = std.testing;
 const mem = std.mem;
 const fmt = std.fmt;
-const util = @import("./util.zig");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 

@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 const Allocator = std.mem.Allocator;
 const HashSet = std.AutoHashMap(u8, void);
 

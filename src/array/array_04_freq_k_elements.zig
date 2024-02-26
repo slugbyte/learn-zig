@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
@@ -49,6 +49,10 @@ pub fn FreqK(comptime T: type) type {
             return self.result_list.items[k - 1].items[index];
         }
 
+        /// create a list of the top freq k elements in a list
+        /// NOTE: caller ownes memory
+        /// Time: O(n)
+        /// Space: O(n)
         pub fn calculate(k: u32, list: []const T, allocator: Allocator) !FreqK(T) {
             const Histogram = std.AutoArrayHashMap(T, usize);
             var hist = Histogram.init(allocator);
