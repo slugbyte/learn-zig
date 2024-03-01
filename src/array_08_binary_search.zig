@@ -33,6 +33,7 @@ pub fn binarySearch(comptime T: type, list: []const T, target: T) ?T {
 }
 
 test "binarySearch" {
+    util.setTestName("binarySearch");
     const data: [9]u32 = .{ 2, 3, 5, 7, 9, 12, 17, 23, 55 };
 
     try util.isOk("found 7", binarySearch(u32, data[0..], 7).? == 7);
