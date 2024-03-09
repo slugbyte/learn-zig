@@ -21,6 +21,25 @@ pub fn Stack(comptime T: type, comptime auto_destory: AutoDestroy) type {
             next: ?*Node,
         };
 
+        const PeekIterator = struct {
+            is_complete: bool = false,
+            current: ?*Node = null,
+
+            pub fn next(self: *PeekIterator) ?T {
+                if (self.is_complete) {
+                    return null;
+                }
+
+                if (self.current) |current| {
+                    self.current = current.next;
+                    return current.value;
+                } else {
+                    self.is_complete = true;
+                    return null;
+                }
+            }
+        };
+
         pub fn init(allocator: std.mem.Allocator) Self {
             return .{
                 .allocator = allocator,
@@ -69,6 +88,12 @@ pub fn Stack(comptime T: type, comptime auto_destory: AutoDestroy) type {
             } else {
                 return null;
             }
+        }
+
+        pub fn peekIterator(self: *Self) PeekIterator {
+            return .{
+                .current = self.head,
+            };
         }
     };
 }
@@ -132,6 +157,44 @@ test "Stack Destory" {
 
     var stack = Stack(*Point, AutoDestroy.Destroy).init(std.testing.allocator);
     defer stack.deinit();
+
+    const a = try std.testing.allocator.create(Point);
+    a.* = .{ .x = 0, .y = 0 };
+
+    // auto destroy
+    const b = try std.testing.allocator.create(Point);
+    b.* = .{ .x = 1, .y = 2 };
+
+    // auto_destroy
+    const c = try std.testing.allocator.create(Point);
+    c.* = .{ .x = 3, .y = 4 };
+
+    try stack.push(a);
+    try stack.push(b);
+    try stack.push(c);
+
+    const first = stack.pop().?;
+    defer std.testing.allocator.destroy(first);
+    try util.isOk("first.x: is 3", first.x == 3);
+    try util.isOk("first.y: is 4", first.y == 4);
+}
+
+test "Stack Self Destory With PeekIterator" {
+    util.setTestName("Stack Destory");
+    const Point = struct {
+        x: u8,
+        y: u8,
+    };
+
+    var stack = Stack(*Point, AutoDestroy.Disabled).init(std.testing.allocator);
+    defer {
+        var iter = stack.peekIterator();
+        while (iter.next()) |value| {
+            std.debug.print("peek iter free: Point({d}, {d})\n", .{ value.x, value.y });
+            std.testing.allocator.destroy(value);
+        }
+        stack.deinit();
+    }
 
     const a = try std.testing.allocator.create(Point);
     a.* = .{ .x = 0, .y = 0 };
