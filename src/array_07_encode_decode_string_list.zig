@@ -73,17 +73,17 @@ test "encodeStringList and decodeStringList" {
     defer t.allocator.free(encoded);
 
     const expected_encoding = "11#hello world10#my name is8#slugbyte15#my lucky # is 4";
-    try util.isOkFmt(t.allocator, "encoded should be \"{s}\"", .{expected_encoding}, util.eql(encoded, expected_encoding));
+    try util.isOkFmt("encoded should be \"{s}\"", .{expected_encoding}, util.eql(encoded, expected_encoding));
 
     util.setTestName("decodeStringList");
     const decoded = try decodeStringList(encoded, t.allocator);
     defer decoded.deinit();
 
     try util.isOk("decoded has 4 items", decoded.items.len == 4);
-    try util.isOkFmt(t.allocator, "decoded[0] is {s}", .{first}, util.eql(decoded.items[0], first));
-    try util.isOkFmt(t.allocator, "decoded[1] is {s}", .{second}, util.eql(decoded.items[1], second));
-    try util.isOkFmt(t.allocator, "decoded[2] is {s}", .{third}, util.eql(decoded.items[2], third));
-    try util.isOkFmt(t.allocator, "decoded[3] is {s}", .{fourth}, util.eql(decoded.items[3], fourth));
+    try util.isOkFmt("decoded[0] is {s}", .{first}, util.eql(decoded.items[0], first));
+    try util.isOkFmt("decoded[1] is {s}", .{second}, util.eql(decoded.items[1], second));
+    try util.isOkFmt("decoded[2] is {s}", .{third}, util.eql(decoded.items[2], third));
+    try util.isOkFmt("decoded[3] is {s}", .{fourth}, util.eql(decoded.items[3], fourth));
 
     for (decoded.items) |item| {
         t.allocator.free(item);

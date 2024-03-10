@@ -40,7 +40,7 @@ test "readFileLinesToU8SliceLineList" {
 
     for (lineU8bufList.items, 1..) |item, line_number| {
         const expected_line = line_iter.next();
-        try util.isOkFmt(t.allocator, "line {d} should be {s}", .{ line_number, expected_line.? }, util.eql(item, expected_line.?));
+        try util.isOkFmt("line {d} should be {s}", .{ line_number, expected_line.? }, util.eql(item, expected_line.?));
         t.allocator.free(item);
     }
 
@@ -77,7 +77,7 @@ test "readFileLinesToU8ArrayLineList" {
     var line_iter = std.mem.splitScalar(u8, util.JSON_NOTE_FILE_CONTENT, '\n');
     for (line_list.items, 1..) |item, line_number| {
         const expected_line = line_iter.next();
-        try util.isOkFmt(t.allocator, "line {d} should be {s}", .{ line_number, expected_line.? }, util.eql(item.items, expected_line.?));
+        try util.isOkFmt("line {d} should be {s}", .{ line_number, expected_line.? }, util.eql(item.items, expected_line.?));
         item.deinit();
     }
     try util.isOk("line_iter next should empty string", 0 == line_iter.next().?.len);
