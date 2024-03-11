@@ -97,13 +97,13 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
             self.len += 1;
         }
 
-        pub fn prependSlice(self: *Self, slice: []T) !void {
+        pub fn prependSlice(self: *Self, slice: []const T) !void {
             const capacity_needed = self.len + slice.len;
             _ = try self.ensureCapacity(capacity_needed);
 
             for (0..self.len) |i| {
-                const toIndex = capacity_needed - i;
-                const fromIndex = self.len - i;
+                const toIndex = capacity_needed - i - 1;
+                const fromIndex = self.len - i - 1;
                 self.buffer[toIndex] = self.buffer[fromIndex];
             }
 
@@ -122,42 +122,54 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
     };
 }
 
-fn add(a: u8, b: u8) u8 {
-    return a + b;
-}
-
 test "ArrayList No AutoDestroy" {
     util.setTestName("ArrayList No AutoDestroy");
     const allocator = std.testing.allocator;
-
     var list = try ArrayList(u8, AutoDestroy.Disabled).init(allocator);
     defer list.deinit();
     var old_capacity = list.capacity;
 
-    util.xxl("\n------------ list is empty");
+    util.xxxxxxxxxxxxxxxHEADER("list is empty");
     try util.isEql("get(0)", list.get(0), null);
-    util.xxl("\n------------ append 2");
+
+    util.xxxxxxxxxxxxxxxHEADER("append 2");
     try list.append(2);
     try util.isEql("get(0)", list.get(0), 2);
     try util.isEql("len", list.len, 1);
     try util.isOk("capacity unchanged", list.capacity == old_capacity);
+    try util.isOk("expected data correct", std.mem.eql(u8, list.buffer[0..list.len], &(.{2})));
 
-    util.xxl("\n----------- append slice [16]u8");
+    util.xxxxxxxxxxxxxxxHEADER("append slice [16]u8");
     const append_data: [16]u8 = .{123} ** 16;
     try list.appendSlice(&append_data);
     try util.isGT("capacity grew", list.capacity, old_capacity);
     try util.isEql("list.len", list.len, 17);
+    try util.isOk("expected data correct", std.mem.eql(u8, list.buffer[0..list.len], &(.{2} ++ append_data)));
 
+    util.xxxxxxxxxxxxxxxHEADER("expand capacity 125");
     old_capacity = list.capacity;
     const new_capacity = try list.ensureCapacity(125);
     try util.isGT("capacity grew", new_capacity, old_capacity);
     try util.isEql("capacity", list.capacity, new_capacity);
     try util.isEql("buffer.len", list.buffer.len, new_capacity);
+    try util.isOk("expected", std.mem.eql(u8, list.buffer[0..list.len], &(.{2} ++ append_data)));
 
+    util.xxxxxxxxxxxxxxxHEADER("prepend 17");
     try list.prepend(17);
-    try util.isEql("get(0)", list.get(0), 17);
-    try util.isEql("get(1)", list.get(1), 2);
-    try util.isEql("get(17)", list.get(17), 123);
-    try util.isEql("get(18)", list.get(18), null);
     try util.isEql("len", list.len, 18);
+    try util.isOk("expected", std.mem.eql(u8, list.buffer[0..list.len], &(.{17} ++ .{2} ++ append_data)));
+
+    util.xxxxxxxxxxxxxxxHEADER("prepend slice [6]u8");
+    const prepend_data: [6]u8 = .{ 6, 5, 4, 3, 2, 1 };
+    try list.prependSlice(&prepend_data);
+    try util.isEql("len", list.len, 24);
+    try util.isOk("expected data correct", std.mem.eql(u8, list.buffer[0..list.len], &(prepend_data ++ .{17} ++ .{2} ++ append_data)));
+
+    util.xxxxxxxxxxxxxxxHEADER("get data");
+    try util.isEql("get(0)", list.get(0), 6);
+    try util.isEql("get(6)", list.get(6), 17);
+    try util.isEql("get(7)", list.get(7), 2);
+    try util.isEql("get(8)", list.get(8), 123);
+    try util.isEql("get(23)", list.get(23), 123);
+    try util.isEql("get(list.len)", list.get(list.len), null);
 }
