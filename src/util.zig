@@ -1,37 +1,63 @@
 const std = @import("std");
+const DISBLE_LOG = false;
 
 var TEST_NAME: []const u8 = "unknown";
+var TOTAL_ASSERT_ACC: u64 = 0;
+var TEST_ASSERT_ACC: u64 = 0;
+var TEST_COUNT_ACC: u64 = 0;
 
 pub const color_red = "\x1b[31m";
+pub const color_green = "\x1b[32m";
+pub const color_yellow = "\x1b[33m";
 pub const color_blue = "\x1b[34m";
 pub const color_reset = "\x1b[0m";
 
 pub const JSON_NOTE_FILE_CONTENT = @embedFile("./res/json/note.json");
-pub const xxd = std.debug.print;
-
+pub fn xxd(comptime fmt: []const u8, args: anytype) void {
+    if (DISBLE_LOG) {
+        return;
+    }
+    std.debug.print(fmt, args);
+}
 pub fn xxp(comptime fmt: []const u8, args: anytype) void {
+    if (DISBLE_LOG) {
+        return;
+    }
     const msg = std.fmt.allocPrint(std.testing.allocator, fmt, args) catch return;
     defer std.testing.allocator.free(msg);
     std.debug.print("{s}\n", .{msg});
 }
 
 pub fn xxpRed(comptime fmt: []const u8, args: anytype) void {
+    if (DISBLE_LOG) {
+        return;
+    }
     const msg = std.fmt.allocPrint(std.testing.allocator, fmt, args) catch return;
     defer std.testing.allocator.free(msg);
     std.debug.print("{s}{s}{s}\n", .{ color_red, msg, color_reset });
 }
 
 pub fn xxxxxxxxxxxxxxxHEADER(comptime text: []const u8) void {
+    setTestName(text);
+    if (DISBLE_LOG) {
+        return;
+    }
     const msg = std.fmt.allocPrint(std.testing.allocator, " {s}{s}{s}", .{ color_blue, text, color_reset }) catch return;
     defer std.testing.allocator.free(msg);
     xxp("\n[{s}] {s:->55} ----", .{ TEST_NAME, msg });
 }
 
 pub fn xxl(comptime text: []const u8) void {
+    if (DISBLE_LOG) {
+        return;
+    }
     xxp("{s}", .{text});
 }
 
 pub fn xxn() void {
+    if (DISBLE_LOG) {
+        return;
+    }
     std.debug.print("\n", .{});
 }
 
@@ -40,11 +66,32 @@ pub inline fn eql(a: []const u8, b: []const u8) bool {
 }
 
 pub fn setTestName(name: []const u8) void {
-    std.debug.print("\n", .{});
+    TEST_ASSERT_ACC = 0;
+    TEST_COUNT_ACC += 1;
     TEST_NAME = name;
 }
 
+pub fn reportTest() void {
+    const assert_msg = std.fmt.allocPrint(std.testing.allocator, " {s}ASSERT PASS {d}{s}", .{ color_green, TEST_ASSERT_ACC, color_reset }) catch return;
+    defer std.testing.allocator.free(assert_msg);
+    xxp("\n[{s}] {s:->55} ----", .{ "report", assert_msg });
+
+    const test_msg = std.fmt.allocPrint(std.testing.allocator, " {s}TEST PASS {d}{s}", .{ color_green, TEST_COUNT_ACC, color_reset }) catch return;
+    defer std.testing.allocator.free(test_msg);
+    xxp("[{s}] {s:->55} ----", .{ "report", test_msg });
+
+    const total_msg = std.fmt.allocPrint(std.testing.allocator, " {s}TOTAL ASSSERT {d}{s}", .{ color_green, TOTAL_ASSERT_ACC, color_reset }) catch return;
+    defer std.testing.allocator.free(total_msg);
+    xxp("[{s}] {s:->55} ----", .{ "report", total_msg });
+}
+
+fn incAssertAcc() void {
+    TOTAL_ASSERT_ACC += 1;
+    TEST_ASSERT_ACC += 1;
+}
+
 pub fn expect(test_kind: []const u8, msg: []const u8, is_ok: bool) !void {
+    incAssertAcc();
     if (is_ok) {
         xxp("[{s}] {s: >7} success: {s}", .{ TEST_NAME, test_kind, msg });
         return;
@@ -57,6 +104,7 @@ pub fn expect(test_kind: []const u8, msg: []const u8, is_ok: bool) !void {
 }
 
 pub fn isEql(msg: []const u8, actual: anytype, expected: anytype) !void {
+    incAssertAcc();
     const is_ok = expected == actual;
     if (is_ok) {
         xxd("[{s}] {s: >7} success: {s} is {any}\n", .{ TEST_NAME, "isEql", msg, expected });
@@ -68,6 +116,7 @@ pub fn isEql(msg: []const u8, actual: anytype, expected: anytype) !void {
 }
 
 pub fn isLT(msg: []const u8, actual: anytype, moreThan: anytype) !void {
+    incAssertAcc();
     const is_ok = actual < moreThan;
     if (is_ok) {
         xxd("[{s}] {s: >7} success: {s} ({any} < {any})\n", .{ TEST_NAME, "isEql", msg, actual, moreThan });
@@ -79,6 +128,7 @@ pub fn isLT(msg: []const u8, actual: anytype, moreThan: anytype) !void {
 }
 
 pub fn isGT(msg: []const u8, actual: anytype, lessThan: anytype) !void {
+    incAssertAcc();
     const is_ok = actual > lessThan;
     if (is_ok) {
         xxd("[{s}] {s: >7} success: {s} ({any} > {any})\n", .{ TEST_NAME, "isEql", msg, actual, lessThan });
