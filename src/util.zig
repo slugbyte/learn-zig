@@ -6,19 +6,31 @@ var TOTAL_ASSERT_ACC: u64 = 0;
 var TEST_ASSERT_ACC: u64 = 0;
 var TEST_COUNT_ACC: u64 = 0;
 
+pub const AutoDestroy = enum {
+    Disabled,
+    Free,
+    Destroy,
+};
+
 pub const color_red = "\x1b[31m";
 pub const color_green = "\x1b[32m";
 pub const color_yellow = "\x1b[33m";
 pub const color_blue = "\x1b[34m";
+pub const color_pink = "\x1b[35m";
+pub const color_aqua = "\x1b[36m";
+pub const color_light_grey = "\x1b[37m";
+pub const color_dark_grey = "\x1b[38m";
 pub const color_reset = "\x1b[0m";
 
 pub const JSON_NOTE_FILE_CONTENT = @embedFile("./res/json/note.json");
+
 pub fn xxd(comptime fmt: []const u8, args: anytype) void {
     if (DISBLE_LOG) {
         return;
     }
     std.debug.print(fmt, args);
 }
+
 pub fn xxp(comptime fmt: []const u8, args: anytype) void {
     if (DISBLE_LOG) {
         return;

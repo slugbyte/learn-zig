@@ -1,42 +1,20 @@
 const std = @import("std");
 const util = @import("./util.zig");
+const mem = std.mem;
+const math = std.math;
+const Allocator = std.mem.Allocator;
+const AutoDestroy = util.AutoDestroy;
 
-const AutoDestroy = enum {
-    Disabled,
-    Free,
-    Destroy,
-};
-
-pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
+pub fn XArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
     return struct {
         capacity: usize,
         len: usize = 0,
         buffer: []T,
-        allocator: std.mem.Allocator,
+        allocator: Allocator,
 
         const Self = @This();
 
-        const Iterator = struct {
-            buffer: []T,
-            current: usize = 0,
-            is_complete: bool = false,
-
-            pub fn next(self: *Iterator) ?T {
-                if (self.is_complete) {
-                    return null;
-                }
-                if (self.current < self.buffer.len) {
-                    const result = self.buffer[self.current];
-                    self.current += 1;
-                    return result;
-                } else {
-                    self.is_complete = true;
-                    return null;
-                }
-            }
-        };
-
-        pub fn initWithCapacity(allocator: std.mem.Allocator, capacity: usize) !Self {
+        pub fn initWithCapacity(allocator: Allocator, capacity: usize) !Self {
             const buffer: []T = try allocator.alloc(T, capacity);
             return .{
                 .capacity = capacity,
@@ -45,7 +23,7 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
             };
         }
 
-        pub fn init(allocator: std.mem.Allocator) !Self {
+        pub fn init(allocator: Allocator) !Self {
             return try initWithCapacity(allocator, 16);
         }
 
@@ -76,6 +54,26 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
             self.len = 0;
         }
 
+        pub const Iterator = struct {
+            buffer: []T,
+            current: usize = 0,
+            is_complete: bool = false,
+
+            pub fn next(self: *Iterator) ?T {
+                if (self.is_complete) {
+                    return null;
+                }
+                if (self.current < self.buffer.len) {
+                    const result = self.buffer[self.current];
+                    self.current += 1;
+                    return result;
+                } else {
+                    self.is_complete = true;
+                    return null;
+                }
+            }
+        };
+
         /// create a Iterator for items in arrayList
         pub fn iterator(self: *Self) Iterator {
             return .{
@@ -89,6 +87,23 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
             for (data, 0..) |*value, index| {
                 value.* = @call(.auto, map_fn, .{ value.*, index, data });
             }
+        }
+
+        // create a std.io.Writer that allows to write to an ArrayList
+        fn writerHandler(self: *Self, data: []const u8) Allocator.Error!usize {
+            try self.appendSlice(data);
+            return data.len;
+        }
+
+        pub const Writer = if (T != u8)
+            @compileError("you can only have a ArrayList.Writer for u8")
+        else
+            std.io.Writer(*Self, Allocator.Error, writerHandler);
+
+        pub fn writer(self: *Self) Writer {
+            return .{
+                .context = self,
+            };
         }
 
         /// set the len to 0 and resize the capacity
@@ -116,12 +131,12 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
         /// ensureCapacity will return the capacity of the ArrayList
         pub fn ensureCapacity(self: *Self, capacity: usize) !usize {
             if (capacity >= self.capacity) {
-                const new_capacity = capacity + @max(10, std.math.sqrt(capacity));
-                if (self.allocator.resize(self.buffer, new_capacity + std.math.sqrt(new_capacity))) {
+                const new_capacity = capacity + @max(10, math.sqrt(capacity));
+                if (self.allocator.resize(self.buffer, new_capacity + math.sqrt(new_capacity))) {
                     self.capacity = new_capacity;
                 } else {
                     const new_buffer = try self.allocator.alloc(T, new_capacity);
-                    std.mem.copyForwards(T, new_buffer, self.buffer);
+                    mem.copyForwards(T, new_buffer, self.buffer);
                     self.allocator.free(self.buffer);
                     self.buffer = new_buffer;
                     self.capacity = new_capacity;
@@ -255,7 +270,7 @@ pub fn ArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
 test "ArrayList No AutoDestroy" {
     util.setTestName("ArrayList No AutoDestroy");
     const allocator = std.testing.allocator;
-    var list = try ArrayList(u8, AutoDestroy.Disabled).init(allocator);
+    var list = try XArrayList(u8, AutoDestroy.Disabled).init(allocator);
     defer list.deinit();
     var old_capacity = list.capacity;
 
@@ -267,14 +282,14 @@ test "ArrayList No AutoDestroy" {
     try util.isEql("get(0)", list.get(0), 2);
     try util.isEql("len", list.len, 1);
     try util.isOk("capacity unchanged", list.capacity == old_capacity);
-    try util.isOk("expected data correct", std.mem.eql(u8, list.buffer[0..list.len], &(.{2})));
+    try util.isOk("expected data correct", mem.eql(u8, list.buffer[0..list.len], &(.{2})));
 
     util.xxxxxxxxxxxxxxxHEADER("append slice [16]u8");
     const append_data: [16]u8 = .{123} ** 16;
     try list.appendSlice(&append_data);
     try util.isGT("capacity grew", list.capacity, old_capacity);
     try util.isEql("list.len", list.len, 17);
-    try util.isOk("expected data correct", std.mem.eql(u8, list.buffer[0..list.len], &(.{2} ++ append_data)));
+    try util.isOk("expected data correct", mem.eql(u8, list.buffer[0..list.len], &(.{2} ++ append_data)));
 
     util.xxxxxxxxxxxxxxxHEADER("expand capacity 125");
     old_capacity = list.capacity;
@@ -282,18 +297,18 @@ test "ArrayList No AutoDestroy" {
     try util.isGT("capacity grew", new_capacity, old_capacity);
     try util.isEql("capacity", list.capacity, new_capacity);
     try util.isEql("buffer.len", list.buffer.len, new_capacity);
-    try util.isOk("expected", std.mem.eql(u8, list.buffer[0..list.len], &(.{2} ++ append_data)));
+    try util.isOk("expected", mem.eql(u8, list.buffer[0..list.len], &(.{2} ++ append_data)));
 
     util.xxxxxxxxxxxxxxxHEADER("prepend 17");
     try list.prepend(17);
     try util.isEql("len", list.len, 18);
-    try util.isOk("expected", std.mem.eql(u8, list.buffer[0..list.len], &(.{17} ++ .{2} ++ append_data)));
+    try util.isOk("expected", mem.eql(u8, list.buffer[0..list.len], &(.{17} ++ .{2} ++ append_data)));
 
     util.xxxxxxxxxxxxxxxHEADER("prepend slice [6]u8");
     const prepend_data: [6]u8 = .{ 6, 5, 4, 3, 2, 1 };
     try list.prependSlice(&prepend_data);
     try util.isEql("len", list.len, 24);
-    try util.isOk("expected data correct", std.mem.eql(u8, list.buffer[0..list.len], &(prepend_data ++ .{17} ++ .{2} ++ append_data)));
+    try util.isOk("expected data correct", mem.eql(u8, list.buffer[0..list.len], &(prepend_data ++ .{17} ++ .{2} ++ append_data)));
 
     util.xxxxxxxxxxxxxxxHEADER("get data");
     try util.isEql("get(0)", list.get(0), 6);
@@ -315,32 +330,32 @@ test "ArrayList No AutoDestroy" {
 
     util.xxxxxxxxxxxxxxxHEADER("fillCapacity");
     try list.fillCapacity(255);
-    try util.isOk("capacity filed with 255", std.mem.eql(u8, list.buffer[0..], &(.{255} ** 136)));
+    try util.isOk("capacity filed with 255", mem.eql(u8, list.buffer[0..], &(.{255} ** 136)));
 
     util.xxxxxxxxxxxxxxxHEADER("fill no set length");
     try list.fill(null, 0);
     try util.isEql("len", list.len, 24);
-    try util.isOk("buffer filled with 0", std.mem.eql(u8, list.buffer[0..list.len], &(.{0} ** 24)));
+    try util.isOk("buffer filled with 0", mem.eql(u8, list.buffer[0..list.len], &(.{0} ** 24)));
 
     util.xxxxxxxxxxxxxxxHEADER("fill and set length");
     try list.fill(5, 1);
     try util.isEql("len", list.len, 5);
-    try util.isOk("buffer filled with 1", std.mem.eql(u8, list.buffer[0..list.len], &(.{1} ** 5)));
+    try util.isOk("buffer filled with 1", mem.eql(u8, list.buffer[0..list.len], &(.{1} ** 5)));
 
     util.xxxxxxxxxxxxxxxHEADER("fill set length");
     try list.fillUnusedCapacity(127);
     try util.isEql("len", list.len, 5);
-    try util.isOk("buffer still filled with 1", std.mem.eql(u8, list.buffer[0..list.len], &(.{1} ** 5)));
-    try util.isOk("buffer unused capacity filled with 127", std.mem.eql(u8, list.buffer[list.len..], &(.{127} ** 131)));
+    try util.isOk("buffer still filled with 1", mem.eql(u8, list.buffer[0..list.len], &(.{1} ** 5)));
+    try util.isOk("buffer unused capacity filled with 127", mem.eql(u8, list.buffer[list.len..], &(.{127} ** 131)));
 
     util.xxxxxxxxxxxxxxxHEADER("clone");
     var clone = try list.clone();
     defer clone.deinit();
     try clone.fill(2, 3);
     try util.isEql("list.len", list.len, 5);
-    try util.isOk("list still filled with 1", std.mem.eql(u8, list.buffer[0..list.len], &(.{1} ** 5)));
+    try util.isOk("list still filled with 1", mem.eql(u8, list.buffer[0..list.len], &(.{1} ** 5)));
     try util.isEql("clone.len", clone.len, 2);
-    try util.isOk("clone filled with 3", std.mem.eql(u8, clone.buffer[0..clone.len], &(.{3} ** 2)));
+    try util.isOk("clone filled with 3", mem.eql(u8, clone.buffer[0..clone.len], &(.{3} ** 2)));
 
     util.xxxxxxxxxxxxxxxHEADER("map mult index");
     const multIndex = struct {
