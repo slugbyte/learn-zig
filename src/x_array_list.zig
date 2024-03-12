@@ -106,21 +106,36 @@ pub fn XArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
             };
         }
 
+        fn bufferResize(self: *Self, new_capacity: usize) bool {
+            if (self.allocator.resize(self.buffer, new_capacity)) {
+                self.capacity = new_capacity;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        fn bufferRealloc(self: *Self, new_capacity: usize) !void {
+            self.allocator.free(self.buffer);
+            const new_buffer = try self.allocator.alloc(T, new_capacity);
+            self.buffer = new_buffer;
+            self.capacity = new_capacity;
+        }
+
         /// set the len to 0 and resize the capacity
         /// if autoDestroy is enabled it will run
         /// if new_capacity is null the capacity will not be changed
         /// contents from buffer are not guaranteed to remain afterwards
         pub fn reset(self: *Self, new_capacity: ?usize) !void {
-            self.len = 0;
             self.autoDestroy();
+            self.len = 0;
             if (new_capacity) |capacity| {
-                if (self.allocator.resize(self.buffer, capacity)) {
-                    self.capacity = capacity;
-                } else {
-                    const new_buffer = try self.allocator.alloc(T, capacity);
-                    self.allocator.free(self.buffer);
-                    self.buffer = new_buffer;
-                    self.capacity = capacity;
+                if (capacity < self.capacity) {
+                    return try self.bufferRealloc(capacity);
+                }
+
+                if (!self.bufferResize(capacity)) {
+                    return try self.bufferRealloc(capacity);
                 }
             }
         }
@@ -130,17 +145,18 @@ pub fn XArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
         /// (a little is @max(10, sqrt(new_capacity)))
         /// ensureCapacity will return the capacity of the ArrayList
         pub fn ensureCapacity(self: *Self, capacity: usize) !usize {
-            if (capacity >= self.capacity) {
+            if (capacity > self.capacity) {
                 const new_capacity = capacity + @max(10, math.sqrt(capacity));
-                if (self.allocator.resize(self.buffer, new_capacity + math.sqrt(new_capacity))) {
-                    self.capacity = new_capacity;
-                } else {
-                    const new_buffer = try self.allocator.alloc(T, new_capacity);
-                    mem.copyForwards(T, new_buffer, self.buffer);
-                    self.allocator.free(self.buffer);
-                    self.buffer = new_buffer;
-                    self.capacity = new_capacity;
-                }
+                // if (self.allocator.resize(self.buffer, new_capacity)) {
+                //     util.xxp("wam {d} new: {d}", .{ self.capacity, new_capacity });
+                //     self.capacity = new_capacity;
+                // } else {
+                const new_buffer = try self.allocator.alloc(T, new_capacity);
+                mem.copyForwards(T, new_buffer, self.buffer);
+                self.allocator.free(self.buffer);
+                self.buffer = new_buffer;
+                self.capacity = new_capacity;
+                // }
             }
             return self.capacity;
         }
@@ -381,6 +397,44 @@ test "ArrayList No AutoDestroy" {
         acc += 1;
     }
     try util.isEql("acc", acc, 34);
+
+    util.xxxxxxxxxxxxxxxHEADER("reset");
+    try list.reset(null);
+    try util.isEql("len", list.len, 0);
+    try util.isEql("capacity can be same", list.capacity, 136);
+    try list.reset(500);
+    try util.isEql("len", list.len, 0);
+    try util.isEql("capacity can grow", list.capacity, 500);
+    try list.reset(10);
+    try util.isEql("len", list.len, 0);
+    try util.isEql("capacity can shrink", list.capacity, 10);
+
+    util.xxxxxxxxxxxxxxxHEADER("writer");
+    const writer = list.writer();
+    var expected_acc: usize = 0;
+    for (0..10) |_| {
+        const random_size = std.crypto.random.int(u8);
+        const random_slice: []u8 = try std.testing.allocator.alloc(u8, random_size);
+        defer std.testing.allocator.free(random_slice);
+
+        for (0..random_size) |index| {
+            random_slice[index] = 1;
+        }
+
+        expected_acc += try writer.write(random_slice);
+    }
+
+    try writer.writeByte(100);
+
+    var actual_acc: usize = 0;
+    var write_iter = list.iterator();
+    while (write_iter.next()) |value| {
+        actual_acc += value;
+    }
+
+    try util.isEql("actual_acc and expected_acc", actual_acc - 100, expected_acc);
+    try util.isEql("actual_acc is buf len", actual_acc - 99, list.len);
+    try util.isGT("actual_acc is buf len", list.capacity, list.len);
 
     // const wat = std.ArrayList(u8).init(std.testing.allocator);
     util.reportTest();
