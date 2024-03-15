@@ -111,7 +111,7 @@ pub fn expect(test_kind: []const u8, msg: []const u8, is_ok: bool) !void {
     xxpRed("[{s}] {s: >7} failed: {s}", .{ TEST_NAME, test_kind, msg });
 
     if (!is_ok) {
-        return error.NeetCodeTestFailed;
+        return error.HelloZigTestFailed;
     }
 }
 
@@ -123,7 +123,7 @@ pub fn isEql(msg: []const u8, actual: anytype, expected: anytype) !void {
         return;
     } else {
         xxd("{s}[{s}] {s: >7} failed: {s} (expected {any} -> found {any}){s}\n", .{ color_red, TEST_NAME, "isEql", msg, expected, actual, color_reset });
-        return error.NeetCodeTestFailed;
+        return error.HelloZigTestFailed;
     }
 }
 
@@ -135,7 +135,7 @@ pub fn isLT(msg: []const u8, actual: anytype, moreThan: anytype) !void {
         return;
     } else {
         xxd("{s}[{s}] {s: >7} failed: {s} ({any} is not < {any}){s}\n", .{ color_red, TEST_NAME, "isEql", msg, actual, moreThan, color_reset });
-        return error.NeetCodeTestFailed;
+        return error.HelloZigTestFailed;
     }
 }
 
@@ -147,7 +147,7 @@ pub fn isGT(msg: []const u8, actual: anytype, lessThan: anytype) !void {
         return;
     } else {
         xxd("{s}[{s}] {s: >7} failed: {s} ({any} is not > {any}){s}\n", .{ color_red, TEST_NAME, "isEql", msg, actual, lessThan, color_reset });
-        return error.NeetCodeTestFailed;
+        return error.geetCodeTestFailed;
     }
 }
 
