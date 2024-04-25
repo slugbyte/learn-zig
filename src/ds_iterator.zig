@@ -61,8 +61,6 @@ test "RandomIterator" {
 
 // This iterator returns an optional number and can be used with a while |thing| {}
 pub fn RangeIterator(comptime T: type) type {
-
-    std.builtin.Type
     switch (@typeInfo(T)) {
         .Int, .Float => {},
         else => {

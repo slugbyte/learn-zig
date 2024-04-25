@@ -6,12 +6,12 @@ const fmt = std.fmt;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
-/// encode an array of strings ([]u8) into a single string
-/// each string prefixed with {len}#{original_string}
-/// then they are all concatinated together
-/// NOTE: Caller ownes the memory
-/// Time: O(n)
-/// space: O(n)
+// encode an array of strings ([]u8) into a single string
+// each string prefixed with {len}#{original_string}
+// then they are all concatinated together
+// NOTE: Caller ownes the memory
+// Time: O(n)
+// space: O(n)
 pub fn encodeStringList(string_list: ArrayList([]const u8), allocator: Allocator) ![]u8 {
     var result = ArrayList(u8).init(allocator);
     defer result.deinit();
@@ -26,10 +26,10 @@ pub fn encodeStringList(string_list: ArrayList([]const u8), allocator: Allocator
     return allocator.dupe(u8, result.items);
 }
 
-/// take an string with an encoded list of strings and turn it back into a list of strings
-/// NOTE: Caller ownes the memory
-/// Time: O(n)
-/// space: O(n)
+// take an string with an encoded list of strings and turn it back into a list of strings
+// NOTE: Caller ownes the memory
+// Time: O(n)
+// space: O(n)
 pub fn decodeStringList(string: []const u8, allocator: Allocator) !ArrayList([]u8) {
     var result = ArrayList([]u8).init(allocator);
     var mark_start: usize = 0;
