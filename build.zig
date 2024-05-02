@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const testFiles: [12][]const u8 = .{
+const testFiles: [14][]const u8 = .{
     "src/array_00_contains_duplicate.zig",
     "src/array_01_is_anagram.zig",
     "src/array_02_two_sum.zig",
@@ -13,6 +13,8 @@ const testFiles: [12][]const u8 = .{
     "src/fs_read_file_lines.zig",
     "src/sort_00_bubble.zig",
     "src/defer.zig",
+    "src/comptime_enum.zig",
+    "src/comptime_union.zig",
 };
 
 // Although this function looks imperative, note that its job is to
