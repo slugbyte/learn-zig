@@ -107,4 +107,9 @@ pub fn build(b: *std.Build) void {
     }
     const run_step = b.step("run_window", "Run window example");
     run_step.dependOn(&window_run_cmd.step);
+
+    // clean
+    const clean_step = b.step("clean", "remove zig-out and zig-cache");
+    const clean_cmd = b.addSystemCommand(&.{ "rm", "-rf", "zig-cache", "zig-out" });
+    clean_step.dependOn(&clean_cmd.step);
 }
