@@ -17,6 +17,7 @@ pub fn build(b: *std.Build) void {
     // data structures
     test_file_list.append("src/test/data_structure/linked_list.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/iterator.zig") catch unreachable;
+    test_file_list.append("src/test/data_structure/throttle.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/auto_destory_stack.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/auto_destroy_queue.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/auto_destroy_array_list.zig") catch unreachable;
@@ -87,25 +88,26 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // window
-    const exe_window = b.addExecutable(.{
-        .name = "window",
-        .root_source_file = .{ .path = "./src/window.zig" },
+    // glfw window
+    const exe_glfw_window = b.addExecutable(.{
+        .name = "glfw-window",
+        .root_source_file = .{ .path = "./src/example/glfw_window/main.zig" },
         .target = target,
         .optimize = optimize,
     });
-    exe_window.root_module.addImport("gl", zgl.module("zgl"));
-    exe_window.root_module.addImport("glfw", glfw.module("mach-glfw"));
-    exe_window.linkFramework("OpenGL");
-    exe_window.addIncludePath(.{ .path = "/opt/homebrew/include" });
-    exe_window.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
-    b.installArtifact(exe_window);
-    const window_run_cmd = b.addRunArtifact(exe_window);
+    exe_glfw_window.root_module.addImport("gl", zgl.module("zgl"));
+    exe_glfw_window.root_module.addImport("glfw", glfw.module("mach-glfw"));
+    exe_glfw_window.linkFramework("OpenGL");
+    exe_glfw_window.addIncludePath(.{ .path = "/opt/homebrew/include" });
+    exe_glfw_window.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
+    b.installArtifact(exe_glfw_window);
+
+    const window_run_cmd = b.addRunArtifact(exe_glfw_window);
     window_run_cmd.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
         window_run_cmd.addArgs(args);
     }
-    const run_step = b.step("run_window", "Run window example");
+    const run_step = b.step("run_glfw_window", "Run glfw window example");
     run_step.dependOn(&window_run_cmd.step);
 
     // clean
