@@ -4,6 +4,24 @@ const std = @import("std");
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
+    // deps
+    const zgl = b.dependency("zgl", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const glfw = b.dependency("mach-glfw", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const zigimg = b.dependency("zigimg", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // load tests
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     var test_file_list = std.ArrayList([]const u8).init(allocator);
@@ -41,6 +59,9 @@ pub fn build(b: *std.Build) void {
     test_file_list.append("src/test/file/read_file_lines.zig") catch unreachable;
     test_file_list.append("src/test/file/file_crud.zig") catch unreachable;
 
+    // librarys
+    test_file_list.append("src/test/lib/zigimg.zig") catch unreachable;
+
     // const testFiles: [][]const u8 = .{
     //     // "src/test/array_00_contains_duplicate.zig",
     //     // "src/test/array_01_is_anagram.zig",
@@ -57,8 +78,6 @@ pub fn build(b: *std.Build) void {
     //     "src/comptime_enum.zig",
     //     "src/comptime_union.zig",
     // };
-    const target = b.standardTargetOptions(.{});
-    const optimize = b.standardOptimizeOption(.{});
 
     const util = b.addSharedLibrary(.{
         .name = "test-util",
@@ -75,19 +94,10 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         });
         unit_tests.root_module.addImport("util", &util.root_module);
+        unit_tests.root_module.addImport("zigimg", zigimg.module("zigimg"));
         const run_unit_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_unit_tests.step);
     }
-
-    // deps
-    const zgl = b.dependency("zgl", .{
-        .target = target,
-        .optimize = optimize,
-    });
-    const glfw = b.dependency("mach-glfw", .{
-        .target = target,
-        .optimize = optimize,
-    });
 
     // glfw window
     const exe_glfw_window = b.addExecutable(.{
