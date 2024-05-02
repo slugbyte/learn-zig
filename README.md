@@ -1,10 +1,9 @@
 > Noodlin around with zig to figure out more about stuffs i don't know nothin about
 
-# TODO
-* rename DS X<OldName> and put expliners in the README
+## zig version
+using the machengine nominated-zig [2024.3.0-mach](https://machengine.org/about/nominated-zig/#202430-mach)
 
-# HUH?
-* how do i create tagged unions with comptime?
+## HUH?
 * how do i create structs with comptime?
 * how do i handle SIGNALs with zig?
 * how do i use environment variables with zig?
