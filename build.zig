@@ -21,39 +21,47 @@ const testFiles: [14][]const u8 = .{
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
-
-    // running the unit tests.
     const test_step = b.step("test", "Run unit tests");
-
     for (testFiles) |file_name| {
         const unit_tests = b.addTest(.{
             .root_source_file = .{ .path = file_name },
             .target = target,
             .optimize = optimize,
         });
-
-        // unit_tests.root_module.addAnonymousImport("util", .{
-        //     .root_source_file = .{ .path = "src/util.zig" },
-        // });
-
-        // unit_tests.linkLibrary(utilLibrary);
-
         const run_unit_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_unit_tests.step);
     }
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
 
-    // Similar to creating the run step earlier, this exposes a `test` step to
-    // the `zig build --help` menu, providing a way for the user to request
+    // deps
+    const zgl = b.dependency("zgl", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const glfw = b.dependency("mach-glfw", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // window
+    const exe_window = b.addExecutable(.{
+        .name = "window",
+        .root_source_file = .{ .path = "./src/window.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_window.root_module.addImport("gl", zgl.module("zgl"));
+    exe_window.root_module.addImport("glfw", glfw.module("mach-glfw"));
+    exe_window.linkFramework("OpenGL");
+    exe_window.addIncludePath(.{ .path = "/opt/homebrew/include" });
+    exe_window.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
+    b.installArtifact(exe_window);
+    const window_run_cmd = b.addRunArtifact(exe_window);
+    window_run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        window_run_cmd.addArgs(args);
+    }
+    const run_step = b.step("run_window", "Run window example");
+    run_step.dependOn(&window_run_cmd.step);
 }
