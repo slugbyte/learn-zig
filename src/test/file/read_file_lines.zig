@@ -1,6 +1,6 @@
 const std = @import("std");
 const t = std.testing;
-const util = @import("./util.zig");
+const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 const Arena = std.heap.ArenaAllocator;
@@ -9,8 +9,6 @@ const print = std.debug.print;
 const U8Array = ArrayList(u8);
 const U8ArrayLineList = ArrayList(U8Array);
 const U8SliceLineList = ArrayList([]u8);
-
-const JSON_FILE_PATH = "./src/res/json/note.json";
 
 pub fn readFileLinesToU8BufferList(file_path: []const u8, allocator: Allocator) !U8SliceLineList {
     const file = try std.fs.cwd().openFile(file_path, .{});
@@ -35,8 +33,11 @@ pub fn readFileLinesToU8BufferList(file_path: []const u8, allocator: Allocator) 
 
 test "readFileLinesToU8SliceLineList" {
     util.setTestName("readFileLinesToU8SliceLineList");
-    const lineU8bufList = try readFileLinesToU8BufferList(JSON_FILE_PATH, t.allocator);
-    var line_iter = std.mem.splitScalar(u8, util.JSON_NOTE_FILE_CONTENT, '\n');
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    defer t.allocator.free(file_path);
+
+    const lineU8bufList = try readFileLinesToU8BufferList(file_path, t.allocator);
+    var line_iter = std.mem.splitScalar(u8, util.ASSET_DATA_JSON_NOTE_ITEM, '\n');
 
     for (lineU8bufList.items, 1..) |item, line_number| {
         const expected_line = line_iter.next();
@@ -73,8 +74,11 @@ pub fn readFileLinesToU8ArrayLineList(file_path: []const u8, allocator: Allocato
 
 test "readFileLinesToU8ArrayLineList" {
     util.setTestName("readFileLinesToU8ArrayLineList");
-    const line_list = try readFileLinesToU8ArrayLineList(JSON_FILE_PATH, t.allocator);
-    var line_iter = std.mem.splitScalar(u8, util.JSON_NOTE_FILE_CONTENT, '\n');
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    defer t.allocator.free(file_path);
+
+    const line_list = try readFileLinesToU8ArrayLineList(file_path, t.allocator);
+    var line_iter = std.mem.splitScalar(u8, util.ASSET_DATA_JSON_NOTE_ITEM, '\n');
     for (line_list.items, 1..) |item, line_number| {
         const expected_line = line_iter.next();
         try util.isOkFmt("line {d} should be {s}", .{ line_number, expected_line.? }, util.eql(item.items, expected_line.?));
