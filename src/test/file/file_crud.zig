@@ -105,6 +105,6 @@ test "createFileAndWrite" {
     try util.isOk("rename exists", fileExists(temp_file_b));
     try util.isOk("old file not exists", !fileExists(temp_file_a));
 
-    // try fileDelete(temp_file_b);
-    // try util.isOk("delete file", !fileExists(temp_file_b));
+    try fileDelete(temp_file_b);
+    try util.isOk("delete file", !fileExists(temp_file_b));
 }
