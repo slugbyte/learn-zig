@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 
 const Item = struct {
     const Self = @This();

@@ -1,5 +1,5 @@
-const util = @import("./util.zig");
 const std = @import("std");
+const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 

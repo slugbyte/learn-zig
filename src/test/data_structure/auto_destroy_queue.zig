@@ -1,11 +1,7 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 
-const AutoDestroy = enum {
-    Disabled,
-    Free,
-    Destroy,
-};
+const AutoDestroy = @import("./auto_destory.zig").AutoDestroy;
 
 /// create a queue that can auto free/destory any remaning values using the allocator provided
 /// if the queue is not empty at deinit

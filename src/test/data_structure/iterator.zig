@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 
 // This iterator returns an error and must be used with a while {} |thing| else |err| {}
 const RandomIterator = struct {

@@ -1,7 +1,7 @@
 const std = @import("std");
+const util = @import("util");
 const ContainerLayout = std.builtin.Type.ContainerLayout;
 const UnionField = std.builtin.Type.UnionField;
-const util = @import("./util.zig");
 
 const UnionSpec = struct {
     name: [:0]const u8,

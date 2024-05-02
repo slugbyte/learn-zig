@@ -1,11 +1,11 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 const mem = std.mem;
 const math = std.math;
 const Allocator = std.mem.Allocator;
-const AutoDestroy = util.AutoDestroy;
+const AutoDestroy = @import("./auto_destory.zig").AutoDestroy;
 
-pub fn XArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
+pub fn AutoDestroyArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
     return struct {
         capacity: usize,
         len: usize = 0,
@@ -286,7 +286,7 @@ pub fn XArrayList(comptime T: type, comptime auto_destroy: AutoDestroy) type {
 test "ArrayList No AutoDestroy" {
     util.setTestName("ArrayList No AutoDestroy");
     const allocator = std.testing.allocator;
-    var list = try XArrayList(u8, AutoDestroy.Disabled).init(allocator);
+    var list = try AutoDestroyArrayList(u8, AutoDestroy.Disabled).init(allocator);
     defer list.deinit();
     var old_capacity = list.capacity;
 

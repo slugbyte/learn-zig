@@ -1,11 +1,12 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
+const AutoDestroy = @import("./auto_destory.zig").AutoDestroy;
 
-const AutoDestroy = enum {
-    Disabled,
-    Free,
-    Destroy,
-};
+// const AutoDestroy = enum {
+//     Disabled,
+//     Free,
+//     Destroy,
+// };
 
 /// A linked list based queue that can auto destroy/free values stored on deinit
 /// if stack is not empty

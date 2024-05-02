@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 const print = std.debug.print;
 
 // create an array of nums the product of all other items

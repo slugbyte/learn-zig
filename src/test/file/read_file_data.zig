@@ -1,6 +1,6 @@
 const std = @import("std");
 const t = std.testing;
-const util = @import("./util.zig");
+const util = @import("util");
 
 const Allocator = std.mem.Allocator;
 const Arena = std.heap.ArenaAllocator;
@@ -10,11 +10,12 @@ const U8Array = ArrayList(u8);
 const U8ArrayLineList = ArrayList(U8Array);
 const U8SliceLineList = ArrayList([]u8);
 
-const JSON_FILE_PATH = "./src/res/json/note.json";
-
 pub fn readFileToU8Slice(file_path: []const u8, allocator: Allocator) ![]u8 {
     const file = try std.fs.cwd().openFile(file_path, .{});
     defer file.close();
+
+    const loc: std.builtin.SourceLocation = @src();
+    print("wat: {s}", .{loc.file});
 
     const file_len = try file.getEndPos();
     const result = try allocator.alloc(u8, file_len);
@@ -29,9 +30,11 @@ pub fn readFileToU8Slice(file_path: []const u8, allocator: Allocator) ![]u8 {
 
 test "readFileToU8Slice" {
     util.setTestName("readFileToU8Slice");
-    const text = try readFileToU8Slice(JSON_FILE_PATH, t.allocator);
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    defer t.allocator.free(file_path);
+    const text = try readFileToU8Slice(file_path, t.allocator);
     defer t.allocator.free(text);
-    try util.isOk("slice should be correct", util.eql(util.JSON_NOTE_FILE_CONTENT, text));
+    try util.isOk("slice should be correct", util.eql(util.ASSET_DATA_JSON_NOTE_ITEM, text));
 }
 
 pub fn readFileToU8Array(file_path: []const u8, allocator: Allocator) !U8Array {
@@ -54,9 +57,11 @@ pub fn readFileToU8Array(file_path: []const u8, allocator: Allocator) !U8Array {
 
 test "readFileToU8Array" {
     util.setTestName("readFileToU8Array");
-    const string = try readFileToU8Array(JSON_FILE_PATH, t.allocator);
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    defer t.allocator.free(file_path);
+    const string = try readFileToU8Array(file_path, t.allocator);
     defer string.deinit();
-    try util.isOk("string.items should be correct", util.eql(string.items, util.JSON_NOTE_FILE_CONTENT));
+    try util.isOk("string.items should be correct", util.eql(string.items, util.ASSET_DATA_JSON_NOTE_ITEM));
 }
 
 pub fn TextBuffer(comptime T: type) type {
@@ -97,8 +102,10 @@ pub fn readFileToTextBuffer(file_path: []const u8, allocator: Allocator) !TextBu
 
 test "readFileToTextBuffer" {
     util.setTestName("readFileToTextBuffer");
-    const buffer = try readFileToTextBuffer(JSON_FILE_PATH, t.allocator);
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    defer t.allocator.free(file_path);
+    const buffer = try readFileToTextBuffer(file_path, t.allocator);
     defer buffer.deinit();
 
-    try util.isOk("TextBuffer.data should be correct", util.eql(util.JSON_NOTE_FILE_CONTENT, buffer.data));
+    try util.isOk("TextBuffer.data should be correct", util.eql(util.ASSET_DATA_JSON_NOTE_ITEM, buffer.data));
 }

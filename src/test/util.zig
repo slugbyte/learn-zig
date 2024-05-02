@@ -1,16 +1,15 @@
 const std = @import("std");
+
+const ArrayList = std.ArrayList;
+const Allocator = std.mem.Allocator;
+const SourceLocation = std.builtin.SourceLocation;
+
 const DISBLE_LOG = false;
 
 var TEST_NAME: []const u8 = "unknown";
 var TOTAL_ASSERT_ACC: u64 = 0;
 var TEST_ASSERT_ACC: u64 = 0;
 var TEST_COUNT_ACC: u64 = 0;
-
-pub const AutoDestroy = enum {
-    Disabled,
-    Free,
-    Destroy,
-};
 
 pub const color_red = "\x1b[31m";
 pub const color_green = "\x1b[32m";
@@ -22,7 +21,8 @@ pub const color_light_grey = "\x1b[37m";
 pub const color_dark_grey = "\x1b[38m";
 pub const color_reset = "\x1b[0m";
 
-pub const JSON_NOTE_FILE_CONTENT = @embedFile("./res/json/note.json");
+pub const ASSET_DATA_JSON_NOTE_ITEM = @embedFile("./asset/json/note_item.json");
+pub const ASSET_DATA_JSON_NOTE_LIST = @embedFile("./asset/json/note_list.json");
 
 pub fn xxd(comptime fmt: []const u8, args: anytype) void {
     if (DISBLE_LOG) {
@@ -169,4 +169,16 @@ pub fn isNotOkFmt(comptime fmt: []const u8, args: anytype, is_ok: bool) !void {
     const msg = try std.fmt.allocPrint(std.testing.allocator, fmt, args);
     defer std.testing.allocator.free(msg);
     return expect("isNotOkFmt", msg, !is_ok);
+}
+
+/// caller owns result
+///
+/// NOTE: this is a stupid idea, but is kina nice for test code
+/// i dont thing it wodul be a good idea to do this kind thing in production
+pub fn getPathRelativeToSrc(allocator: Allocator, src: SourceLocation, path: []const u8) ![]const u8 {
+    var string_builder = ArrayList(u8).init(allocator);
+    try string_builder.appendSlice(std.fs.path.dirname(src.file).?);
+    try string_builder.appendSlice("/");
+    try string_builder.appendSlice(path);
+    return string_builder.toOwnedSlice();
 }

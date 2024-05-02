@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("./util.zig");
+const util = @import("util");
 const EnumField = std.builtin.Type.EnumField;
 
 pub fn EnumFromStringList(comptime tag_type: type, comptime string_list: []const [:0]const u8) type {
