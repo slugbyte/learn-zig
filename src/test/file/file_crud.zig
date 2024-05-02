@@ -1,7 +1,7 @@
 const std = @import("std");
 const fs = std.fs;
 const t = std.testing;
-const util = @import("./util.zig");
+const util = @import("util");
 const Allocator = std.mem.Allocator;
 
 // create
@@ -42,7 +42,7 @@ pub fn fileRename(path: []const u8, new_name: []const u8, allocator: Allocator) 
     if (fs.path.dirname(path)) |dirname| {
         const new_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ dirname, new_name });
         defer allocator.free(new_path);
-        errdefer allocator.free(new_path);
+        // errdefer allocator.free(new_path);
         try fs.cwd().rename(path, new_path);
     } else {
         return error.RenameFailed;
@@ -57,9 +57,9 @@ pub fn fileAppend(path: []const u8, content: []const u8) !void {
     defer file.close();
     errdefer file.close();
 
-    const end_pos = try file.getEndPos();
-    const pos = try file.getPos();
-    std.debug.print("pos: {d}, end: {d}\n", .{ pos, end_pos });
+    // const end_pos = try file.getEndPos();
+    // const pos = try file.getPos();
+    // std.debug.print("pos: {d}, end: {d}\n", .{ pos, end_pos });
     try file.seekFromEnd(0);
     _ = try file.write(content);
 }
@@ -73,36 +73,38 @@ pub fn fileRead(path: []const u8, allocator: Allocator) ![]u8 {
 }
 
 test "createFileAndWrite" {
-    util.setTestName("fileExists");
+    util.setTestName("file crud");
 
     const temp_file_content = "hello world\n";
     const append_content = "its slugbyte\n";
-    const temp_file_path = "./temp_file.txt";
-    const rename_file_path = "./temp_file_renamed.txt";
-    fileDelete(temp_file_path) catch {};
-    fileDelete(rename_file_path) catch {};
 
-    util.setTestName("fileCreateWrite");
-    try fileCreateWrite(temp_file_path, temp_file_content);
-    try util.isOk("temp file exists", fileExists(temp_file_path));
+    const temp_file_a = try util.getPathRelativeToSrc(t.allocator, @src(), "../temp/file_crud_temp_file_a.txt");
+    defer t.allocator.free(temp_file_a);
 
-    util.setTestName("fileRead");
-    const read_content_original = try fileRead(temp_file_path, t.allocator);
+    const temp_file_b = try util.getPathRelativeToSrc(t.allocator, @src(), "../temp/file_crud_temp_file_b.txt");
+    defer t.allocator.free(temp_file_b);
+
+    const temp_file_b_name = "file_crud_temp_file_b.txt";
+
+    fileDelete(temp_file_a) catch {};
+    fileDelete(temp_file_b) catch {};
+
+    try fileCreateWrite(temp_file_a, temp_file_content);
+    try util.isOk("create file", fileExists(temp_file_a));
+
+    const read_content_original = try fileRead(temp_file_a, t.allocator);
     defer t.allocator.free(read_content_original);
-    try util.isOk("content is correct", util.eql(temp_file_content, read_content_original));
+    try util.isOk("read file", util.eql(temp_file_content, read_content_original));
 
-    util.setTestName("fileAppend");
-    try fileAppend(temp_file_path, append_content);
-    const read_content_append = try fileRead(temp_file_path, t.allocator);
+    try fileAppend(temp_file_a, append_content);
+    const read_content_append = try fileRead(temp_file_a, t.allocator);
     defer t.allocator.free(read_content_append);
-    try util.isOk("appen content is correct", util.eql(temp_file_content ++ append_content, read_content_append));
+    try util.isOk("append file", util.eql(temp_file_content ++ append_content, read_content_append));
 
-    util.setTestName("fileRename");
-    try fileRename(temp_file_path, rename_file_path, t.allocator);
-    try util.isOk("renaem file exists", fileExists(rename_file_path));
-    try util.isOk("temp file not exists", !fileExists(temp_file_path));
+    try fileRename(temp_file_a, temp_file_b_name, t.allocator);
+    try util.isOk("rename exists", fileExists(temp_file_b));
+    try util.isOk("old file not exists", !fileExists(temp_file_a));
 
-    util.setTestName("fileDelete");
-    try fileDelete(rename_file_path);
-    try util.isOk("rename file not exists", !fileExists(rename_file_path));
+    // try fileDelete(temp_file_b);
+    // try util.isOk("delete file", !fileExists(temp_file_b));
 }

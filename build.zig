@@ -37,6 +37,7 @@ pub fn build(b: *std.Build) void {
     // file system
     test_file_list.append("src/test/file/read_file_data.zig") catch unreachable;
     test_file_list.append("src/test/file/read_file_lines.zig") catch unreachable;
+    test_file_list.append("src/test/file/file_crud.zig") catch unreachable;
 
     // const testFiles: [][]const u8 = .{
     //     // "src/test/array_00_contains_duplicate.zig",
