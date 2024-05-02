@@ -18,6 +18,7 @@ pub fn build(b: *std.Build) void {
     test_file_list.append("src/test/data_structure/linked_list.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/iterator.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/throttle.zig") catch unreachable;
+    test_file_list.append("src/test/data_structure/debounce.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/auto_destory_stack.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/auto_destroy_queue.zig") catch unreachable;
     test_file_list.append("src/test/data_structure/auto_destroy_array_list.zig") catch unreachable;
