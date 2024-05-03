@@ -112,7 +112,6 @@ pub fn build(b: *std.Build) void {
     exe_glfw_window.addIncludePath(.{ .path = "/opt/homebrew/include" });
     exe_glfw_window.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
     b.installArtifact(exe_glfw_window);
-
     const window_run_cmd = b.addRunArtifact(exe_glfw_window);
     window_run_cmd.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
@@ -120,6 +119,27 @@ pub fn build(b: *std.Build) void {
     }
     const run_step = b.step("run_glfw_window", "Run glfw window example");
     run_step.dependOn(&window_run_cmd.step);
+
+    //triangle
+    const exe_opengl_triangle = b.addExecutable(.{
+        .name = "glfw-window",
+        .root_source_file = .{ .path = "./src/example/opengl_triangle/main.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    exe_opengl_triangle.root_module.addImport("gl", zgl.module("zgl"));
+    exe_opengl_triangle.root_module.addImport("glfw", glfw.module("mach-glfw"));
+    exe_opengl_triangle.linkFramework("OpenGL");
+    exe_opengl_triangle.addIncludePath(.{ .path = "/opt/homebrew/include" });
+    exe_opengl_triangle.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
+    b.installArtifact(exe_opengl_triangle);
+    const exe_opengl_triangle_cmd = b.addRunArtifact(exe_opengl_triangle);
+    exe_opengl_triangle_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        exe_opengl_triangle_cmd.addArgs(args);
+    }
+    const opengl_triangle_run_step = b.step("run_opengl_triangle", "Run glfw window example");
+    opengl_triangle_run_step.dependOn(&exe_opengl_triangle_cmd.step);
 
     // clean
     const clean_step = b.step("clean", "remove zig-out and zig-cache");
