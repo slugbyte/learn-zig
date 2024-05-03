@@ -19,26 +19,19 @@
             .url = "https://pkg.machengine.org/mach-glfw/e57190c095097810980703aa26d4f0669a21dbab.tar.gz",
             .hash = "12205a32c8e6ca23c68191b1e95405d2bd5f8e3055cba1c8ce0738d673ef49aef913",
         },
-        .zgl = .{
-            .url = "https://github.com/slugbyte/zgl/archive/zgl_4_1.tar.gz",
-            .hash = "1220705d344996a27003583f32352525f1ceacc544983886e00e9b0ec0ea8e36ae5c",
-        },
         .zigimg = .{
             .url = "https://github.com/zigimg/zigimg/archive/637974e2d31dcdbc33f1e9cc8ffb2e46abd2e215.tar.gz",
             .hash = "122012026c3a65ff1d4acba3b3fe80785f7cee9c6b4cdaff7ed0fbf23b0a6c803989",
         },
+        .zigglgen = .{
+            .url = "https://github.com/castholm/zigglgen/releases/download/v0.2.1/zigglgen.tar.gz",
+            .hash = "122059d1ff6787eedb40771eabb0f04d04fe299bd1bae7b216c4a9d894719c2a148a",
+        },
     },
     .paths = .{
-        // This makes *all* files, recursively, included in this package. It is generally
-        // better to explicitly list the files and directories instead, to insure that
-        // fetching from tarballs, file system paths, and version control all result
-        // in the same contents hash.
-        "",
-        // For example...
-        //"build.zig",
-        //"build.zig.zon",
-        //"src",
-        //"LICENSE",
-        //"README.md",
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "README.md",
     },
 }

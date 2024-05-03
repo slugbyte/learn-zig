@@ -7,11 +7,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // deps
-    const zgl = b.dependency("zgl", .{
-        .target = target,
-        .optimize = optimize,
-    });
     const glfw = b.dependency("mach-glfw", .{
         .target = target,
         .optimize = optimize,
@@ -19,6 +14,13 @@ pub fn build(b: *std.Build) void {
     const zigimg = b.dependency("zigimg", .{
         .target = target,
         .optimize = optimize,
+    });
+
+    const zigglegen = @import("zigglgen").generateBindingsModule(b, .{
+        .api = .gl,
+        .version = .@"4.1",
+        .profile = .core,
+        .extensions = &.{ .ARB_clip_control, .NV_scissor_exclusive },
     });
 
     // load tests
@@ -106,7 +108,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_glfw_window.root_module.addImport("gl", zgl.module("zgl"));
+    exe_glfw_window.root_module.addImport("gl", zigglegen);
     exe_glfw_window.root_module.addImport("glfw", glfw.module("mach-glfw"));
     exe_glfw_window.linkFramework("OpenGL");
     exe_glfw_window.addIncludePath(.{ .path = "/opt/homebrew/include" });
@@ -127,7 +129,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_opengl_triangle.root_module.addImport("gl", zgl.module("zgl"));
+    exe_opengl_triangle.root_module.addImport("gl", zigglegen);
     exe_opengl_triangle.root_module.addImport("glfw", glfw.module("mach-glfw"));
     exe_opengl_triangle.linkFramework("OpenGL");
     exe_opengl_triangle.addIncludePath(.{ .path = "/opt/homebrew/include" });

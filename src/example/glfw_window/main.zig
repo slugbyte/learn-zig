@@ -1,13 +1,10 @@
 const std = @import("std");
 const gl = @import("gl");
 const glfw = @import("glfw");
+var gl_procs: gl.ProcTable = undefined;
 
 fn errorCallback(error_code: glfw.ErrorCode, description: [:0]const u8) void {
     std.log.err("glfw error code ({}): {s}\n", .{ error_code, description });
-}
-
-fn getProcAddress(_: type, symbolName: [:0]const u8) ?gl.binding.FunctionPointer {
-    return glfw.getProcAddress(symbolName);
 }
 
 pub fn main() !void {
@@ -35,18 +32,21 @@ pub fn main() !void {
     glfw.makeContextCurrent(window);
     defer glfw.makeContextCurrent(null);
 
-    gl.loadExtensions(void, getProcAddress) catch |err| {
-        std.log.err("failed to load gl extenstion: {any}", .{err});
+    if (!gl_procs.init(glfw.getProcAddress)) {
+        std.log.err("failed to load gl extenstion", .{});
         std.process.exit(1);
-    };
+    }
+
+    gl.makeProcTableCurrent(&gl_procs);
+    defer gl.makeProcTableCurrent(null);
 
     while (!window.shouldClose()) {
         window.swapBuffers();
         // input
         // update
         // render
-        gl.clearColor(0.92, 0.92, 0.92, 1.0);
-        gl.clear(.{ .color = true });
+        gl.ClearColor(0.92, 0.92, 0.92, 1.0);
+        gl.Clear(gl.COLOR_BUFFER_BIT);
         glfw.pollEvents();
     }
 }
