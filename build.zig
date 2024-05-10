@@ -33,6 +33,7 @@ pub fn build(b: *std.Build) void {
     test_file_list.append("src/test/lang/comptime_enum.zig") catch unreachable;
     test_file_list.append("src/test/lang/comptime_union.zig") catch unreachable;
     test_file_list.append("src/test/lang/defer_ref_vs_val.zig") catch unreachable;
+    test_file_list.append("src/test/lang/interface_anyopaque.zig") catch unreachable;
 
     // data structures
     test_file_list.append("src/test/data_structure/linked_list.zig") catch unreachable;

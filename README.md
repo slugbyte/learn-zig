@@ -4,6 +4,9 @@
 using the machengine nominated-zig [2024.3.0-mach](https://machengine.org/about/nominated-zig/#202430-mach)
 
 ## HUH?
+* silent tests unless fail
+* refactor util.zig into assert.zig
+* interface with union
 * how do i create structs with comptime?
 * how do i handle SIGNALs with zig?
 * how do i use environment variables with zig?
