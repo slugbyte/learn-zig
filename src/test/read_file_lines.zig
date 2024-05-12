@@ -33,7 +33,7 @@ pub fn readFileLinesToU8BufferList(file_path: []const u8, allocator: Allocator) 
 
 test "readFileLinesToU8SliceLineList" {
     util.setTestName("readFileLinesToU8SliceLineList");
-    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./asset/json/note_item.json");
     defer t.allocator.free(file_path);
 
     const lineU8bufList = try readFileLinesToU8BufferList(file_path, t.allocator);
@@ -74,7 +74,7 @@ pub fn readFileLinesToU8ArrayLineList(file_path: []const u8, allocator: Allocato
 
 test "readFileLinesToU8ArrayLineList" {
     util.setTestName("readFileLinesToU8ArrayLineList");
-    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./asset/json/note_item.json");
     defer t.allocator.free(file_path);
 
     const line_list = try readFileLinesToU8ArrayLineList(file_path, t.allocator);

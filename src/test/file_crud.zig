@@ -78,10 +78,10 @@ test "createFileAndWrite" {
     const temp_file_content = "hello world\n";
     const append_content = "its slugbyte\n";
 
-    const temp_file_a = try util.getPathRelativeToSrc(t.allocator, @src(), "../temp/file_crud_temp_file_a.txt");
+    const temp_file_a = try util.getPathRelativeToSrc(t.allocator, @src(), "./temp/file_crud_temp_file_a.txt");
     defer t.allocator.free(temp_file_a);
 
-    const temp_file_b = try util.getPathRelativeToSrc(t.allocator, @src(), "../temp/file_crud_temp_file_b.txt");
+    const temp_file_b = try util.getPathRelativeToSrc(t.allocator, @src(), "./temp/file_crud_temp_file_b.txt");
     defer t.allocator.free(temp_file_b);
 
     const temp_file_b_name = "file_crud_temp_file_b.txt";

@@ -30,7 +30,7 @@ pub fn readFileToU8Slice(file_path: []const u8, allocator: Allocator) ![]u8 {
 
 test "readFileToU8Slice" {
     util.setTestName("readFileToU8Slice");
-    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./asset/json/note_item.json");
     defer t.allocator.free(file_path);
     const text = try readFileToU8Slice(file_path, t.allocator);
     defer t.allocator.free(text);
@@ -57,7 +57,7 @@ pub fn readFileToU8Array(file_path: []const u8, allocator: Allocator) !U8Array {
 
 test "readFileToU8Array" {
     util.setTestName("readFileToU8Array");
-    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./asset/json/note_item.json");
     defer t.allocator.free(file_path);
     const string = try readFileToU8Array(file_path, t.allocator);
     defer string.deinit();
@@ -102,7 +102,7 @@ pub fn readFileToTextBuffer(file_path: []const u8, allocator: Allocator) !TextBu
 
 test "readFileToTextBuffer" {
     util.setTestName("readFileToTextBuffer");
-    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/json/note_item.json");
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./asset/json/note_item.json");
     defer t.allocator.free(file_path);
     const buffer = try readFileToTextBuffer(file_path, t.allocator);
     defer buffer.deinit();

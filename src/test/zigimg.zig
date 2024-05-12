@@ -15,7 +15,7 @@ fn isLeftHalf(img: Image, pixelOffset: usize) bool {
 }
 
 test "zigimg" {
-    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../asset/png/path.png");
+    const file_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./asset/png/path.png");
     defer t.allocator.free(file_path);
     var img = try Image.fromFilePath(t.allocator, file_path);
     defer img.deinit();
@@ -55,7 +55,7 @@ test "zigimg" {
             pixel.* = zigimg.color.Rgb24.initRgb(gray, gray, gray);
         }
     }
-    const output_path = try util.getPathRelativeToSrc(t.allocator, @src(), "../temp/image.png");
+    const output_path = try util.getPathRelativeToSrc(t.allocator, @src(), "./temp/image.png");
     defer t.allocator.free(output_path);
     try img.writeToFilePath(output_path, .{
         .png = .{},

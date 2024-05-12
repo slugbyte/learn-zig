@@ -30,40 +30,40 @@ pub fn build(b: *std.Build) void {
     defer test_file_list.deinit();
 
     // language experiments
-    test_file_list.append("src/test/lang/comptime_enum.zig") catch unreachable;
-    test_file_list.append("src/test/lang/comptime_union.zig") catch unreachable;
-    test_file_list.append("src/test/lang/defer_ref_vs_val.zig") catch unreachable;
-    test_file_list.append("src/test/lang/interface_anyopaque.zig") catch unreachable;
+    test_file_list.append("src/test/comptime_enum.zig") catch unreachable;
+    test_file_list.append("src/test/comptime_union.zig") catch unreachable;
+    test_file_list.append("src/test/defer_ref_vs_val.zig") catch unreachable;
+    test_file_list.append("src/test/interface_anyopaque.zig") catch unreachable;
 
     // data structures
-    test_file_list.append("src/test/data_structure/linked_list.zig") catch unreachable;
-    test_file_list.append("src/test/data_structure/iterator.zig") catch unreachable;
-    test_file_list.append("src/test/data_structure/throttle.zig") catch unreachable;
-    test_file_list.append("src/test/data_structure/debounce.zig") catch unreachable;
-    test_file_list.append("src/test/data_structure/auto_destory_stack.zig") catch unreachable;
-    test_file_list.append("src/test/data_structure/auto_destroy_queue.zig") catch unreachable;
-    test_file_list.append("src/test/data_structure/auto_destroy_array_list.zig") catch unreachable;
+    test_file_list.append("src/test/linked_list.zig") catch unreachable;
+    test_file_list.append("src/test/iterator.zig") catch unreachable;
+    test_file_list.append("src/test/throttle.zig") catch unreachable;
+    test_file_list.append("src/test/debounce.zig") catch unreachable;
+    test_file_list.append("src/test/auto_destory_stack.zig") catch unreachable;
+    test_file_list.append("src/test/auto_destroy_queue.zig") catch unreachable;
+    test_file_list.append("src/test/auto_destroy_array_list.zig") catch unreachable;
 
     // sorting algorithms
-    test_file_list.append("src/test/sort/bubble_sort.zig") catch unreachable;
+    test_file_list.append("src/test/bubble_sort.zig") catch unreachable;
 
     // array code challenges
-    test_file_list.append("src/test/array/contains_duplicate.zig") catch unreachable;
-    test_file_list.append("src/test/array/binary_search.zig") catch unreachable;
-    test_file_list.append("src/test/array/freq_k_elements.zig") catch unreachable;
-    test_file_list.append("src/test/array/two_sum.zig") catch unreachable;
-    test_file_list.append("src/test/array/product_except_self.zig") catch unreachable;
-    test_file_list.append("src/test/array/string_list_encode_decode.zig") catch unreachable;
-    test_file_list.append("src/test/array/crystal_ball_drop.zig") catch unreachable;
-    test_file_list.append("src/test/array/is_valid_anagram.zig") catch unreachable;
+    test_file_list.append("src/test/contains_duplicate.zig") catch unreachable;
+    test_file_list.append("src/test/binary_search.zig") catch unreachable;
+    test_file_list.append("src/test/freq_k_elements.zig") catch unreachable;
+    test_file_list.append("src/test/two_sum.zig") catch unreachable;
+    test_file_list.append("src/test/product_except_self.zig") catch unreachable;
+    test_file_list.append("src/test/string_list_encode_decode.zig") catch unreachable;
+    test_file_list.append("src/test/crystal_ball_drop.zig") catch unreachable;
+    test_file_list.append("src/test/is_valid_anagram.zig") catch unreachable;
 
     // file system
-    test_file_list.append("src/test/file/read_file_data.zig") catch unreachable;
-    test_file_list.append("src/test/file/read_file_lines.zig") catch unreachable;
-    test_file_list.append("src/test/file/file_crud.zig") catch unreachable;
+    test_file_list.append("src/test/read_file_data.zig") catch unreachable;
+    test_file_list.append("src/test/read_file_lines.zig") catch unreachable;
+    test_file_list.append("src/test/file_crud.zig") catch unreachable;
 
     // librarys
-    test_file_list.append("src/test/lib/zigimg.zig") catch unreachable;
+    test_file_list.append("src/test/zigimg.zig") catch unreachable;
 
     // const testFiles: [][]const u8 = .{
     //     // "src/test/array_00_contains_duplicate.zig",
