@@ -1,6 +1,6 @@
 const std = @import("std");
 const t = std.testing;
-const util = @import("util");
+const util = @import("./util.zig");
 
 const zigimg = @import("zigimg");
 const Image = zigimg.Image;

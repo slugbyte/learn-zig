@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const util = @import("./util.zig");
 
 /// binary search
 /// Time: O(log(n))

@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const util = @import("./util.zig");
 
 // what index does the crystal ball break at
 // Time: O(sqrt(n))

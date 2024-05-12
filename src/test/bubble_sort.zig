@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const util = @import("./util.zig");
 
 // Time: O(n^2)
 // Space: O(1)

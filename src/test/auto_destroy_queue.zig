@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const util = @import("./util.zig");
 
 const AutoDestroy = @import("./auto_destory.zig").AutoDestroy;
 

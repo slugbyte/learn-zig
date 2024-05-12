@@ -1,7 +1,7 @@
 const std = @import("std");
 const fs = std.fs;
 const t = std.testing;
-const util = @import("util");
+const util = @import("./util.zig");
 const Allocator = std.mem.Allocator;
 
 // create

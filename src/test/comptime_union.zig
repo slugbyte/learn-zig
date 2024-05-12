@@ -1,5 +1,5 @@
 const std = @import("std");
-const util = @import("util");
+const util = @import("./util.zig");
 const ContainerLayout = std.builtin.Type.ContainerLayout;
 const UnionField = std.builtin.Type.UnionField;
 
