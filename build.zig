@@ -1,16 +1,98 @@
 const std = @import("std");
 
-// Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
-// runner.
+const BuildContext = struct {
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    zigglegen: *std.Build.Module,
+    mach_glfw: *std.Build.Dependency,
+    zigimg: *std.Build.Dependency,
+};
+
+const Example = struct {
+    name: []const u8,
+    description: []const u8,
+    root_source_path: []const u8,
+};
+
+const TestLoader = struct {
+    source_list: std.ArrayList([]const u8),
+
+    pub fn init(allocator: std.mem.Allocator) TestLoader {
+        const source_list = std.ArrayList([]const u8).init(allocator);
+        return .{
+            .source_list = source_list,
+        };
+    }
+
+    pub fn deinit(self: *TestLoader) void {
+        self.source_list.deinit();
+    }
+
+    pub fn addTest(self: *TestLoader, comptime root_source_path: []const u8) void {
+        self.source_list.append(root_source_path) catch unreachable;
+    }
+};
+
+// fn createExample(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, comptime example: Example) void {
+fn createExample(ctx: BuildContext, comptime example: Example) void {
+    const exe = ctx.b.addExecutable(.{
+        .name = example.name,
+        .root_source_file = .{ .path = example.root_source_path },
+        .target = ctx.target,
+        .optimize = ctx.optimize,
+    });
+    ctx.b.installArtifact(exe);
+    const run_artifact = ctx.b.addRunArtifact(exe);
+    run_artifact.step.dependOn(ctx.b.getInstallStep());
+    if (ctx.b.args) |args| {
+        run_artifact.addArgs(args);
+    }
+    const step = ctx.b.step(example.name, example.description);
+    step.dependOn(&run_artifact.step);
+}
+
+fn createExampleOpenGl(ctx: BuildContext, comptime example: Example) void {
+    const exe = ctx.b.addExecutable(.{
+        .name = example.name,
+        .root_source_file = .{ .path = example.root_source_path },
+        .target = ctx.target,
+        .optimize = ctx.optimize,
+    });
+    exe.root_module.addImport("gl", ctx.zigglegen);
+    exe.root_module.addImport("glfw", ctx.mach_glfw.module("mach-glfw"));
+    exe.root_module.addImport("zigimg", ctx.zigimg.module("zigimg"));
+    exe.linkFramework("OpenGL");
+    exe.addIncludePath(.{ .path = "/opt/homebrew/include" });
+    exe.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
+    ctx.b.installArtifact(exe);
+    const run_artifact = ctx.b.addRunArtifact(exe);
+    run_artifact.step.dependOn(ctx.b.getInstallStep());
+    if (ctx.b.args) |args| {
+        run_artifact.addArgs(args);
+    }
+    const step = ctx.b.step(example.name, example.description);
+    step.dependOn(&run_artifact.step);
+}
+
 pub fn build(b: *std.Build) void {
+    // std lib stuff
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const glfw = b.dependency("mach-glfw", .{
+    // clean step
+    const clean_step = b.step("clean", "remove zig-out and zig-cache");
+    const clean_cmd = b.addSystemCommand(&.{ "rm", "-rf", "zig-cache", "zig-out" });
+    clean_step.dependOn(&clean_cmd.step);
+
+    // deps
+    const mach_glfw = b.dependency("mach-glfw", .{
         .target = target,
         .optimize = optimize,
     });
+
     const zigimg = b.dependency("zigimg", .{
         .target = target,
         .optimize = optimize,
@@ -23,129 +105,83 @@ pub fn build(b: *std.Build) void {
         .extensions = &.{ .ARB_clip_control, .NV_scissor_exclusive },
     });
 
-    // load tests
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    var test_file_list = std.ArrayList([]const u8).init(allocator);
-    defer test_file_list.deinit();
-
-    // language experiments
-    test_file_list.append("src/test/comptime_enum.zig") catch unreachable;
-    test_file_list.append("src/test/comptime_union.zig") catch unreachable;
-    test_file_list.append("src/test/defer_ref_vs_val.zig") catch unreachable;
-    test_file_list.append("src/test/interface_anyopaque.zig") catch unreachable;
-
-    // data structures
-    test_file_list.append("src/test/linked_list.zig") catch unreachable;
-    test_file_list.append("src/test/iterator.zig") catch unreachable;
-    test_file_list.append("src/test/throttle.zig") catch unreachable;
-    test_file_list.append("src/test/debounce.zig") catch unreachable;
-    test_file_list.append("src/test/auto_destory_stack.zig") catch unreachable;
-    test_file_list.append("src/test/auto_destroy_queue.zig") catch unreachable;
-    test_file_list.append("src/test/auto_destroy_array_list.zig") catch unreachable;
-
-    // sorting algorithms
-    test_file_list.append("src/test/bubble_sort.zig") catch unreachable;
-
-    // array code challenges
-    test_file_list.append("src/test/contains_duplicate.zig") catch unreachable;
-    test_file_list.append("src/test/binary_search.zig") catch unreachable;
-    test_file_list.append("src/test/freq_k_elements.zig") catch unreachable;
-    test_file_list.append("src/test/two_sum.zig") catch unreachable;
-    test_file_list.append("src/test/product_except_self.zig") catch unreachable;
-    test_file_list.append("src/test/string_list_encode_decode.zig") catch unreachable;
-    test_file_list.append("src/test/crystal_ball_drop.zig") catch unreachable;
-    test_file_list.append("src/test/is_valid_anagram.zig") catch unreachable;
-
-    // file system
-    test_file_list.append("src/test/read_file_data.zig") catch unreachable;
-    test_file_list.append("src/test/read_file_lines.zig") catch unreachable;
-    test_file_list.append("src/test/file_crud.zig") catch unreachable;
-
-    // librarys
-    test_file_list.append("src/test/zigimg.zig") catch unreachable;
-
-    // const testFiles: [][]const u8 = .{
-    //     // "src/test/array_00_contains_duplicate.zig",
-    //     // "src/test/array_01_is_anagram.zig",
-    //     // "src/test/array_02_two_sum.zig",
-    //     // "src/test/array_04_freq_k_elements.zig",
-    //     // "src/test/array_05_product_except_self.zig",
-    //     // "src/test/array_07_encode_decode_string_list.zig",
-    //     // "src/test/array_08_binary_search.zig",
-    //     // "src/test/array_09_crystal_ball_drop.zig",
-    //     "src/fs_read_file.zig",
-    //     "src/fs_read_file_lines.zig",
-    //     "src/sort_00_bubble.zig",
-    //     "src/defer.zig",
-    //     "src/comptime_enum.zig",
-    //     "src/comptime_union.zig",
-    // };
-
-    const util = b.addSharedLibrary(.{
-        .name = "test-util",
-        .root_source_file = .{ .path = "src/test/util.zig" },
+    const ctx: BuildContext = .{
+        .b = b,
         .target = target,
         .optimize = optimize,
+        .zigglegen = zigglegen,
+        .mach_glfw = mach_glfw,
+        .zigimg = zigimg,
+    };
+
+    // example
+    createExample(ctx, .{
+        .name = "signal_catch",
+        .description = "example exe: catch sigint demo",
+        .root_source_path = "./src/example/signal_catch/main.zig",
     });
 
-    const test_step = b.step("test", "Run unit tests");
-    for (test_file_list.items) |file_name| {
+    createExampleOpenGl(ctx, .{
+        .name = "glfw_window",
+        .description = "example exe: create a window with glfw",
+        .root_source_path = "./src/example/glfw_window/main.zig",
+    });
+
+    createExampleOpenGl(ctx, .{
+        .name = "opengl_triangle",
+        .description = "example exe: create a triagle with opengl",
+        .root_source_path = "./src/example/opengl_triangle/main.zig",
+    });
+
+    // load tests
+    var t = TestLoader.init(allocator);
+    defer t.deinit();
+
+    // test language experiments
+    t.addTest("src/test/comptime_enum.zig");
+    t.addTest("src/test/comptime_union.zig");
+    t.addTest("src/test/defer_ref_vs_val.zig");
+    t.addTest("src/test/interface_anyopaque.zig");
+
+    // test data structures
+    t.addTest("src/test/linked_list.zig");
+    t.addTest("src/test/iterator.zig");
+    t.addTest("src/test/throttle.zig");
+    t.addTest("src/test/debounce.zig");
+    t.addTest("src/test/auto_destory_stack.zig");
+    t.addTest("src/test/auto_destroy_queue.zig");
+    t.addTest("src/test/auto_destroy_array_list.zig");
+
+    // test sorting algorithms
+    t.addTest("src/test/bubble_sort.zig");
+
+    // test array code challenges
+    t.addTest("src/test/contains_duplicate.zig");
+    t.addTest("src/test/binary_search.zig");
+    t.addTest("src/test/freq_k_elements.zig");
+    t.addTest("src/test/two_sum.zig");
+    t.addTest("src/test/product_except_self.zig");
+    t.addTest("src/test/string_list_encode_decode.zig");
+    t.addTest("src/test/crystal_ball_drop.zig");
+    t.addTest("src/test/is_valid_anagram.zig");
+
+    // test file system
+    t.addTest("src/test/read_file_data.zig");
+    t.addTest("src/test/read_file_lines.zig");
+    t.addTest("src/test/file_crud.zig");
+
+    // test librarys
+    t.addTest("src/test/zigimg.zig");
+
+    const test_step = b.step("test", "run tests");
+    for (t.source_list.items) |file_name| {
         const unit_tests = b.addTest(.{
             .root_source_file = .{ .path = file_name },
             .target = target,
             .optimize = optimize,
         });
-        unit_tests.root_module.addImport("util", &util.root_module);
         unit_tests.root_module.addImport("zigimg", zigimg.module("zigimg"));
         const run_unit_tests = b.addRunArtifact(unit_tests);
         test_step.dependOn(&run_unit_tests.step);
     }
-
-    // glfw window
-    const exe_glfw_window = b.addExecutable(.{
-        .name = "glfw-window",
-        .root_source_file = .{ .path = "./src/example/glfw_window/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-    exe_glfw_window.root_module.addImport("gl", zigglegen);
-    exe_glfw_window.root_module.addImport("glfw", glfw.module("mach-glfw"));
-    exe_glfw_window.linkFramework("OpenGL");
-    exe_glfw_window.addIncludePath(.{ .path = "/opt/homebrew/include" });
-    exe_glfw_window.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
-    b.installArtifact(exe_glfw_window);
-    const window_run_cmd = b.addRunArtifact(exe_glfw_window);
-    window_run_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        window_run_cmd.addArgs(args);
-    }
-    const run_step = b.step("run_glfw_window", "Run glfw window example");
-    run_step.dependOn(&window_run_cmd.step);
-
-    //triangle
-    const exe_opengl_triangle = b.addExecutable(.{
-        .name = "glfw-window",
-        .root_source_file = .{ .path = "./src/example/opengl_triangle/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-    exe_opengl_triangle.root_module.addImport("gl", zigglegen);
-    exe_opengl_triangle.root_module.addImport("glfw", glfw.module("mach-glfw"));
-    exe_opengl_triangle.linkFramework("OpenGL");
-    exe_opengl_triangle.addIncludePath(.{ .path = "/opt/homebrew/include" });
-    exe_opengl_triangle.addLibraryPath(.{ .path = "/opt/homebrew/lib" });
-    b.installArtifact(exe_opengl_triangle);
-    const exe_opengl_triangle_cmd = b.addRunArtifact(exe_opengl_triangle);
-    exe_opengl_triangle_cmd.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        exe_opengl_triangle_cmd.addArgs(args);
-    }
-    const opengl_triangle_run_step = b.step("run_opengl_triangle", "Run glfw window example");
-    opengl_triangle_run_step.dependOn(&exe_opengl_triangle_cmd.step);
-
-    // clean
-    const clean_step = b.step("clean", "remove zig-out and zig-cache");
-    const clean_cmd = b.addSystemCommand(&.{ "rm", "-rf", "zig-cache", "zig-out" });
-    clean_step.dependOn(&clean_cmd.step);
 }
