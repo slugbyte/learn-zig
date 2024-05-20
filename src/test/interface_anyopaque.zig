@@ -6,7 +6,7 @@ const Greeter = struct {
     implSpeak: *const fn (ptr: *const anyopaque, say: []const u8) void,
 
     pub fn speak(self: Greeter, say: []const u8) void {
-        return self.implSpeak(self.ptr, say);
+        return self.ieplSpeak(self.ptr, say);
     }
 };
 
