@@ -10,7 +10,25 @@ const Greeter = struct {
     }
 };
 
-const Person = struct {
+const Monster = struct {
+    const Self = @This();
+    name: []const u8,
+    kind: []const u8,
+
+    fn implGreeterSpeak(ptr: *const anyopaque, say: []const u8) void {
+        const self: *const Self = @ptrCast(@alignCast(ptr));
+        std.debug.print("a {s} named {s} grunts \"{s}\"!\n", .{ self.kind, self.name, say });
+    }
+
+    pub fn greeter(self: *const Self) Greeter {
+        return .{
+            .ptr = self,
+            .implSpeak = implGreeterSpeak,
+        };
+    }
+};
+
+const Player = struct {
     const Self = @This();
     name: []const u8,
 
@@ -27,28 +45,10 @@ const Person = struct {
     }
 };
 
-const Dog = struct {
-    const Self = @This();
-    name: []const u8,
-    kind: []const u8,
-
-    fn implGreeterSpeak(ptr: *const anyopaque, say: []const u8) void {
-        const self: *const Self = @ptrCast(@alignCast(ptr));
-        std.debug.print("a {s} named {s} barks \"{s}\"!\n", .{ self.kind, self.name, say });
-    }
-
-    pub fn greeter(self: *const Self) Greeter {
-        return .{
-            .ptr = self,
-            .implSpeak = implGreeterSpeak,
-        };
-    }
-};
-
 test "Greeter" {
     util.setTestName("Interface Greeter");
 
-    const dog = Dog{
+    const dog = Monster{
         .name = "hank",
         .kind = "cow dog",
     };
@@ -56,7 +56,7 @@ test "Greeter" {
     const dogGreeter = dog.greeter();
     dogGreeter.speak("woof woof");
 
-    const person = Person{
+    const person = Player{
         .name = "slugbyte",
     };
 
